@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Varela" />
 
 ReactDOM.render(
   <React.StrictMode>
