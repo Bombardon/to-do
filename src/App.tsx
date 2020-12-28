@@ -31,7 +31,7 @@ const App = () => {
   };
 
   const handleCompleteTask = async (task: Task) => {
-    task.isComplete = true;
+    Object.assign(task, {isComplete: true});
     await updateTask(task);
     updateTaskLists(await getTasks());
   }
