@@ -1,60 +1,67 @@
-import React, { FC } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import React, { useEffect } from 'react';
 
 import './App.css';
+import { addTask, getTasks, Task, updateTask } from './Task';
+import { TaskList } from './TaskList';
+import { AddTask } from './AddTask';
 
-type Task = {
-  ID: string,
-  Description: string,
-}
+const getIncompleteTasks = (tasks: Task[] | null) => {
+  return tasks === null ? null : tasks.filter(task => task.isComplete === false);
+};
 
-type Tasks = Array<Task>;
-
-interface TaskListProps {
-  data: Tasks
-}
-
-interface TaskListItemProps {
-  data: Task
-}
-
-interface AddTaskProps {
-  value: string,
-  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  onSubmit?: () => void;   
-}
-
-const tasks: Task[] = [];
-//   {
-//     ID: "1",
-//     Description: 'Task 1',
-//   },
-//   {
-//     ID: "2",
-//     Description: 'Task 2',
-//   }
-// ];
+const getCompletedTasks = (tasks: Task[] | null) => {
+  return tasks === null ? null : tasks.filter(task => task.isComplete === true);
+};
 
 const App = () => {
-  const [list, setTaskList] = React.useState(tasks);
+  const [incompleteTasks, setTaskList] = React.useState<Task[] | null>(getIncompleteTasks(null));
+  const [completeTasks, setCompletedTaskList] = React.useState(getCompletedTasks(null));
   const [newTask, setNewTask] = React.useState('');
 
-  function handleChange(event : React.ChangeEvent<HTMLInputElement>) {
+  useEffect(() => {
+    const getAllTasks = async() => {
+      const tasks = await getTasks();
+      updateTaskLists(tasks);
+    };
+    getAllTasks();    
+  }, []);
+
+  const handleChange = (event : React.ChangeEvent<HTMLInputElement>) => {
     setNewTask(event.target.value);
+  };
+
+  const handleCompleteTask = async (task: Task) => {
+    task.isComplete = true;
+    await updateTask(task);
+    updateTaskLists(await getTasks());
   }
 
-  function handleAddTask() {
-    const updatedList = list.concat({ ID: uuidv4(), Description: newTask });
-    setTaskList(updatedList);
+  const updateTaskLists = (tasks: Task[]) => {
+    setTaskList(getIncompleteTasks(tasks));
+    setCompletedTaskList(getCompletedTasks(tasks));
+  };
+
+  const handleAddTask = async (newTask: string) => {
+    await addTask({ ID: '0', description: newTask, isComplete: false });
     setNewTask('');
+    updateTaskLists(await getTasks());
   }
 
   return (
-    <div>
+    <div style={{padding: '10px', backgroundColor: 'white', boxShadow: '0 3px 7px 0 rgba(110, 112, 114, 0.21)'}}>
       <h1 style={{fontSize:'50px'}}>To-do</h1>
       <h2>My tasks</h2>
-      <TaskList data={list} />
+      <TaskList 
+        tasks={incompleteTasks} 
+        onComplete={handleCompleteTask}
+      />
 
+      <h2>Completed</h2>
+      <TaskList 
+        tasks={completeTasks}
+        onComplete={handleCompleteTask}
+      />
+      <hr />
       <AddTask 
         value={newTask}
         onChange={handleChange}
@@ -64,39 +71,4 @@ const App = () => {
   );
 }
 
-const AddTask: FC<AddTaskProps> = ({value, onChange, onSubmit}) => (
-  <div style={{marginTop: '30px', padding: '20px 10px', boxShadow: '0 3px 7px 0 rgba(110, 112, 114, 0.21)'}}>
-    Add task: &nbsp;
-    <input 
-      type="text" 
-      value={value}
-      onChange={onChange}
-    />
-    <button 
-      type='submit'
-      onClick={onSubmit}
-    >
-      Add
-    </button>
-  </div>
-);
-
-const TaskList: FC<TaskListProps> = ({ data }) => (
-  <div style={{maxWidth: '400px', padding: '0px 10px'}}>
-    {data.length > 0 &&
-        data.map((task) => (
-          <TaskListItem key={task.ID} data={task} />
-        ))
-    } 
-    {data.length === 0 &&
-      <span>You don't have any tasks yet.</span>
-    }
-  </div>
-);
-
-const TaskListItem: FC<TaskListItemProps> = ({ data }) => (
-  <div style={{padding: '5px 0px', clear: 'both'}}>
-    <span>{data.Description} <button style={{float: 'right'}}>Complete</button></span>
-  </div>
-)
 export default App;
