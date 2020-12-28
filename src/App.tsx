@@ -14,6 +14,10 @@ interface TaskListProps {
   data: Tasks
 }
 
+interface TaskListItemProps {
+  data: Task
+}
+
 interface AddTaskProps {
   value: string,
   onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -48,7 +52,9 @@ const App = () => {
   return (
     <div>
       <h1 style={{fontSize:'50px'}}>To-do</h1>
+      <h2>My tasks</h2>
       <TaskList data={list} />
+
       <AddTask 
         value={newTask}
         onChange={handleChange}
@@ -59,31 +65,28 @@ const App = () => {
 }
 
 const AddTask: FC<AddTaskProps> = ({value, onChange, onSubmit}) => (
-  <div>
-  Add task: &nbsp;
-  <input 
-    type="text" 
-    value={value}
-    onChange={onChange}
-  />
-  <button 
-    type='submit'
-    onClick={onSubmit}
-  >
-    Add
-  </button>
-</div>
+  <div style={{marginTop: '30px', padding: '20px 10px', boxShadow: '0 3px 7px 0 rgba(110, 112, 114, 0.21)'}}>
+    Add task: &nbsp;
+    <input 
+      type="text" 
+      value={value}
+      onChange={onChange}
+    />
+    <button 
+      type='submit'
+      onClick={onSubmit}
+    >
+      Add
+    </button>
+  </div>
 );
 
 const TaskList: FC<TaskListProps> = ({ data }) => (
-  <div style={{boxShadow: '0 3px 7px 0 rgba(110, 112, 114, 0.21)'}}>
-    <h2>My tasks</h2>
+  <div style={{maxWidth: '400px', padding: '0px 10px'}}>
     {data.length > 0 &&
-      <ul>
-        {data.map((task) => (
-          <li key={task.ID}>{task.Description} <button>Complete</button></li>
-        ))}
-      </ul>
+        data.map((task) => (
+          <TaskListItem key={task.ID} data={task} />
+        ))
     } 
     {data.length === 0 &&
       <span>You don't have any tasks yet.</span>
@@ -91,4 +94,9 @@ const TaskList: FC<TaskListProps> = ({ data }) => (
   </div>
 );
 
+const TaskListItem: FC<TaskListItemProps> = ({ data }) => (
+  <div style={{padding: '5px 0px', clear: 'both'}}>
+    <span>{data.Description} <button style={{float: 'right'}}>Complete</button></span>
+  </div>
+)
 export default App;
